@@ -2,30 +2,31 @@ const express = require('express');
 const router = express.Router();
 const slugify = require('slugify');
 const db = require('../config/db');
+const { v4: uuidV4 } = require('uuid');
 
 router.post('/create', (req, res) => {
   const { name } = req.body;
 
   // Simple validation
   if (!name) {
-    return res.status(400).json({ msg: 'Please enter all fields' });
+    return res.status(400).json({ msg: 'Please enter class name' });
   }
 
   // sql for user
-  let sqlCheck = `SELECT * from courses WHERE slug = ?`;
-  let sql = 'INSERT INTO courses SET ?';
+  let sqlCheck = `SELECT * from classes WHERE slug = ?`;
+  let sql = 'INSERT INTO classes SET ?';
   const slug = slugify(name).toLowerCase();
 
   db.query(sqlCheck, slug, (err, course) => {
-    if (course.length > 0)
-      return res.status(400).json({ msg: 'Course Exists' });
+    if (course.length > 0) return res.status(400).json({ msg: 'Class Exists' });
 
     const data = {
-      course_name: name.toLowerCase(),
+      class_name: name.toLowerCase(),
       slug: slugify(name).toLowerCase(),
+      uid: uuidV4(),
     };
 
-    db.query(sql, data, (err, result) => {
+    db.query(sql, data, (err) => {
       if (err) {
         return res.status(401).json({ msg: 'Unable to store data' });
       }
@@ -36,7 +37,7 @@ router.post('/create', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  let getQuery = `SELECT * FROM courses`;
+  let getQuery = `SELECT * FROM classes`;
 
   db.query(getQuery, (err, result) => {
     return res.status(200).json(result);
@@ -44,23 +45,16 @@ router.get('/', (req, res) => {
 });
 
 router.put('/', (req, res) => {
-  const { course_name, students, slug } = req.body;
-  const newSlug = slugify(course_name).toLowerCase();
+  const { class_name, slug } = req.body;
+  const newSlug = slugify(class_name).toLowerCase();
 
-  if (students.length == 0)
-    return res.status(400).json({ msg: 'Please add students to this course' });
+  var updatedata = 'UPDATE classes SET class_name = ?, slug = ? WHERE slug = ?';
 
-  var updatedata =
-    'UPDATE courses SET course_name = ?, course_students = ?, slug = ? WHERE slug = ?';
+  console.log(req.body);
 
   db.query(
     updatedata,
-    [
-      course_name.toLowerCase(),
-      students.toString().toLowerCase(),
-      newSlug,
-      slug,
-    ],
+    [class_name.toLowerCase(), newSlug, slug],
     function (error) {
       if (error) return res.status(400).json({ msg: 'Unable to update' });
 
@@ -69,11 +63,10 @@ router.put('/', (req, res) => {
   );
 });
 
-router.delete('/', (req, res) => {
-  const { course_id } = req.body;
-
-  let delQuery = 'DELETE FROM courses WHERE course_id = ?';
-  db.query(delQuery, [course_id], (err, result) => {
+router.delete('/:uid', (req, res) => {
+  const { uid } = req.params;
+  let delQuery = 'DELETE FROM classes WHERE uid = ?';
+  db.query(delQuery, [uid], (err, result) => {
     if (err) {
       res.send(err).status(400);
     } else {

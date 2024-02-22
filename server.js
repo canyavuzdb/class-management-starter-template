@@ -1,21 +1,24 @@
-const express = require("express");
-const morgan = require("morgan");
-const dotenv = require("dotenv");
+const express = require('express');
+const morgan = require('morgan');
+const dotenv = require('dotenv');
 
 const app = express();
 
-/* Bodyparser Middleware */
+// * BorderParser Middleware
 app.use(express.json());
 
-/* Load env */
-dotenv.config({ path: "./config.env" });
+// * Load Env
+dotenv.config({ path: './config.env' });
 
-//* Log rout actions
-if (process.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
+//* Log route actions
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 }
 
-/* Use Routes */
+//* Use Routes
+app.use('/api/course', require('./routes/course'));
+app.use('/api/class', require('./routes/class'));
+app.use('/api/student', require('./routes/student'));
 
 const port = process.env.PORT || 5000;
 
