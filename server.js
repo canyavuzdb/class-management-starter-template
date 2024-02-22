@@ -4,19 +4,21 @@ const dotenv = require('dotenv');
 
 const app = express();
 
-/* Bodyparser Middleware */
+// * BorderParser Middleware
 app.use(express.json());
 
-/* Load env */
+// * Load Env
 dotenv.config({ path: './config.env' });
 
-//* Log rout actions
-if (process.NODE_ENV !== 'production') {
+//* Log route actions
+if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-/* Use Routes */
-app.use('/api/courses', require('./routes/courses'));
+//* Use Routes
+app.use('/api/course', require('./routes/course'));
+app.use('/api/class', require('./routes/class'));
+app.use('/api/student', require('./routes/student'));
 
 const port = process.env.PORT || 5000;
 
