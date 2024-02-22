@@ -1,6 +1,6 @@
-const express = require("express");
-const morgan = require("morgan");
-const dotenv = require("dotenv");
+const express = require('express');
+const morgan = require('morgan');
+const dotenv = require('dotenv');
 
 const app = express();
 
@@ -8,14 +8,15 @@ const app = express();
 app.use(express.json());
 
 /* Load env */
-dotenv.config({ path: "./config.env" });
+dotenv.config({ path: './config.env' });
 
 //* Log rout actions
-if (process.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
+if (process.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
 }
 
 /* Use Routes */
+app.use('/api/courses', require('./routes/courses'));
 
 const port = process.env.PORT || 5000;
 
